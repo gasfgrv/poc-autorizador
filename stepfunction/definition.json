@@ -1,0 +1,58 @@
+{
+  "Comment": "Workflow de Autorização do POC-Autorizador",
+  "StartAt": "SalvarControle",
+  "States": {
+    "SalvarControle": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "tb-autorizador-controle",
+        "Item": {
+          "id_exec": {
+            "S.$": "$$.Execution.Id"
+          },
+          "status": {
+            "S": "INICIADO"
+          },
+          "id_transacao": {
+            "S.$": "$.id_transacao"
+          }
+        }
+      },
+      "ResultPath": "$.db_controle_result",
+      "Next": "ProcessarResposta"
+    },
+    "ProcessarResposta": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:lambda-response",
+      "Parameters": {
+        "id_transacao.$": "$.id_transacao"
+      },
+      "ResultSelector": {
+        "body.$": "States.StringToJson($.Payload.body)"
+      },
+      "ResultPath": "$.lambda_result",
+      "Next": "SalvarResposta"
+    },
+    "SalvarResposta": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "tb-autorizador-resposta",
+        "Item": {
+          "id_transacao": {
+            "S.$": "$.id_transacao"
+          },
+          "status_autorizacao": {
+            "S.$": "$.lambda_result.body.status"
+          },
+          "mensagem": {
+            "S.$": "$.lambda_result.body.message"
+          }
+        }
+      },
+      "ResultPath": "$.db_resposta_result",
+      "End": true
+    }
+  }
+}
