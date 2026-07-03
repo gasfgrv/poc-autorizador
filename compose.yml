@@ -1,0 +1,68 @@
+services:
+  autorizador-kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: autorizador-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://autorizador-kafka:9092,PLAINTEXT_HOST://localhost:29092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@autorizador-kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:29092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - autorizador-net
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka-init
+    depends_on:
+      - autorizador-kafka
+    entrypoint: [ "sh", "-c", "kafka-topics --bootstrap-server autorizador-kafka:9092 --create --if-not-exists --topic autorizador-evento --partitions 1 --replication-factor 1 && kafka-topics --bootstrap-server autorizador-kafka:9092 --create --if-not-exists --topic autorizador-comando --partitions 1 --replication-factor 1" ]
+    networks:
+      - autorizador-net
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "autorizador-kafka:9092"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+    depends_on:
+      - autorizador-kafka
+    networks:
+      - autorizador-net
+
+  aws-autorizador:
+    image: localstack/localstack:4.14.0
+    container_name: aws-autorizador
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - SERVICES=lambda,dynamodb,sqs,stepfunctions
+      - AWS_DEFAULT_REGION=us-east-1
+      - DEBUG=0
+    volumes:
+      - "./localstack-init:/etc/localstack/init/ready.d"
+      - "./lambda:/opt/code/lambda"
+      - "./stepfunction:/opt/code/stepfunction"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - autorizador-net
+
+networks:
+  autorizador-net:
+    name: autorizador-net
+    driver: bridge
