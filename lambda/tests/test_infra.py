@@ -1,12 +1,12 @@
 from decimal import Decimal
-from unittest.mock import MagicMock
+
 from domain.entities import Transaction
 from infra.adapters import DynamoDBTransactionRepository
 
 
-def test_repository_save_converts_floats():
-    mock_table = MagicMock()
-    mock_dynamodb = MagicMock()
+def test_repository_save_converts_floats(mocker):
+    mock_table = mocker.MagicMock()
+    mock_dynamodb = mocker.MagicMock()
     mock_dynamodb.Table.return_value = mock_table
 
     repo = DynamoDBTransactionRepository(
@@ -37,3 +37,4 @@ def test_repository_save_converts_floats():
     assert isinstance(saved_item["nested"]["nested_list"][0], Decimal)
     assert saved_item["nested"]["nested_list"][0] == Decimal("1.2")
     assert saved_item["nested"]["nested_list"][1] == 3
+

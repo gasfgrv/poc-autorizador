@@ -1,14 +1,15 @@
 import os
-import boto3
 from decimal import Decimal
+
+import boto3
+
 from domain.entities import Transaction
 from domain.ports import TransactionRepository
 
 
 class DynamoDBTransactionRepository(TransactionRepository):
-    def __init__(self, table_name: str = None, dynamodb_resource=None):
-        self.table_name = table_name or os.environ.get(
-            "TABLE_NAME", "tb-autorizador-resposta")
+    def __init__(self, table_name: str | None = None, dynamodb_resource=None):
+        self.table_name = table_name or os.environ.get("TABLE_NAME", "tb-autorizador-resposta")
         self.dynamodb = dynamodb_resource or boto3.resource("dynamodb")
         self.table = self.dynamodb.Table(self.table_name)
 

@@ -1,6 +1,6 @@
-import time
 import random
 import string
+import time
 
 
 class Transaction:
@@ -16,7 +16,6 @@ class Transaction:
         id_transacao = f"transaction_{random_str}_{timestamp_ms}"
 
         data = {k: v for k, v in payload.items() if k != "taskToken"}
-
         return cls(id_transacao, data)
 
     def to_dict(self) -> dict:

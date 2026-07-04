@@ -1,12 +1,12 @@
 import json
 import logging
+
 from application.usecases import SaveTransactionUseCase
 from infra.adapters import DynamoDBTransactionRepository
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialized lazily to avoid exceptions during import in unit tests
 _use_case = None
 
 
@@ -20,7 +20,7 @@ def get_use_case() -> SaveTransactionUseCase:
     return _use_case
 
 
-def handler(event, _):
+def handler(event, _) -> dict:
     logger.info("Lambda invoked with event: %s", json.dumps(event))
 
     try:
@@ -40,8 +40,7 @@ def handler(event, _):
             "data": transaction.to_dict()
         }
 
-        logger.info("Successfully stored transaction %s",
-                    transaction.id_transacao)
+        logger.info("Successfully stored transaction %s", transaction.id_transacao)
 
         return {
             "statusCode": 200,

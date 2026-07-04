@@ -1,6 +1,6 @@
-from domain.ports import TransactionRepository
-from domain.entities import Transaction
 from application.usecases import SaveTransactionUseCase
+from domain.entities import Transaction
+from domain.ports import TransactionRepository
 
 
 class MockTransactionRepository(TransactionRepository):

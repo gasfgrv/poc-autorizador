@@ -1,17 +1,17 @@
 import json
-from unittest.mock import MagicMock
+
 import index
 from domain.entities import Transaction
 
 
-def test_handler_success(monkeypatch):
+def test_handler_success(mocker):
     mock_transaction = Transaction(
         "transaction_abc123_123456789", {"amount": 150})
 
-    mock_use_case = MagicMock()
+    mock_use_case = mocker.MagicMock()
     mock_use_case.execute.return_value = mock_transaction
 
-    monkeypatch.setattr(index, "get_use_case", lambda: mock_use_case)
+    mocker.patch.object(index, "get_use_case", return_value=mock_use_case)
 
     event = {
         "amount": 150,
@@ -29,13 +29,13 @@ def test_handler_success(monkeypatch):
     mock_use_case.execute.assert_called_once_with(event)
 
 
-def test_handler_success_string_event(monkeypatch):
+def test_handler_success_string_event(mocker):
     mock_transaction = Transaction(
         "transaction_xyz789_987654321", {"amount": 300})
-    mock_use_case = MagicMock()
+    mock_use_case = mocker.MagicMock()
     mock_use_case.execute.return_value = mock_transaction
 
-    monkeypatch.setattr(index, "get_use_case", lambda: mock_use_case)
+    mocker.patch.object(index, "get_use_case", return_value=mock_use_case)
 
     event_str = '{"amount": 300, "taskToken": "some-token"}'
 
@@ -49,11 +49,11 @@ def test_handler_success_string_event(monkeypatch):
         {"amount": 300, "taskToken": "some-token"})
 
 
-def test_handler_exception(monkeypatch):
-    mock_use_case = MagicMock()
+def test_handler_exception(mocker):
+    mock_use_case = mocker.MagicMock()
     mock_use_case.execute.side_effect = Exception("Database failure")
 
-    monkeypatch.setattr(index, "get_use_case", lambda: mock_use_case)
+    mocker.patch.object(index, "get_use_case", return_value=mock_use_case)
 
     response = index.handler({"amount": 100}, None)
 
@@ -61,3 +61,4 @@ def test_handler_exception(monkeypatch):
     body = json.loads(response["body"])
     assert "error" in body
     assert body["details"] == "Database failure"
+
