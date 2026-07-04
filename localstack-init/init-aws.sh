@@ -53,7 +53,7 @@ zipf.close()
 echo "Creating Lambda: lambda-response"
 awslocal lambda create-function \
     --function-name lambda-response \
-    --runtime python3.13 \
+    --runtime python3.14 \
     --role arn:aws:iam::000000000000:role/execution-role \
     --handler index.handler \
     --zip-file fileb:///tmp/lambda.zip
