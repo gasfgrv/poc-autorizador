@@ -1,58 +1,61 @@
 {
-  "Comment": "Workflow de Autorização do POC-Autorizador",
-  "StartAt": "SalvarControle",
+  "Comment": "Workflow de Autorização com SQS e Lambda no LocalStack",
+  "StartAt": "SQS SendMessage",
   "States": {
-    "SalvarControle": {
+    "SQS SendMessage": {
       "Type": "Task",
-      "Resource": "arn:aws:states:::dynamodb:putItem",
-      "Parameters": {
-        "TableName": "tb-autorizador-controle",
-        "Item": {
-          "id_exec": {
-            "S.$": "$$.Execution.Id"
-          },
-          "status": {
-            "S": "INICIADO"
-          },
-          "id_transacao": {
-            "S.$": "$.id_transacao"
-          }
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Arguments": {
+        "QueueUrl": "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/sqs-autorizador-eventos",
+        "MessageBody": "{% $merge([$states.input, {'taskToken': $states.context.Task.Token}]) %}"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Comment": "erro ao publicar no SQS",
+          "Next": "Falha"
         }
-      },
-      "ResultPath": "$.db_controle_result",
-      "Next": "ProcessarResposta"
+      ],
+      "Next": "Lambda Invoke"
     },
-    "ProcessarResposta": {
+    "Lambda Invoke": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:lambda-response",
-      "Parameters": {
-        "id_transacao.$": "$.id_transacao"
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "Payload": "{% $states.input %}",
+        "FunctionName": "arn:aws:lambda:us-east-1:000000000000:function:lambda-response"
       },
-      "ResultSelector": {
-        "body.$": "States.StringToJson($.Payload.body)"
-      },
-      "ResultPath": "$.lambda_result",
-      "Next": "SalvarResposta"
-    },
-    "SalvarResposta": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::dynamodb:putItem",
-      "Parameters": {
-        "TableName": "tb-autorizador-resposta",
-        "Item": {
-          "id_transacao": {
-            "S.$": "$.id_transacao"
-          },
-          "status_autorizacao": {
-            "S.$": "$.lambda_result.body.status"
-          },
-          "mensagem": {
-            "S.$": "$.lambda_result.body.message"
-          }
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
         }
-      },
-      "ResultPath": "$.db_resposta_result",
-      "End": true
+      ],
+      "End": true,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Falha",
+          "Comment": "Erro na execução da Lambda"
+        }
+      ]
+    },
+    "Falha": {
+      "Type": "Fail"
     }
-  }
+  },
+  "QueryLanguage": "JSONata"
 }
