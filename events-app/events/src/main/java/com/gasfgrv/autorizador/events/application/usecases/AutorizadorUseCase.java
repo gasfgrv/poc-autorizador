@@ -34,9 +34,11 @@ public class AutorizadorUseCase implements AutorizadorInputPort {
         boolean existeExecucao = repository.buscarDadosDaExecucao(taskToken);
 
         if (!existeExecucao || !approved) {
+            log.info("existeExecucao: {}, approved: {}", existeExecucao, approved);
             responsePort.responderComFalha(taskToken);
         }
 
+        log.info("Evento enviado para autorizar pedido");
         responsePort.responderComSucesso(taskToken, pedido);
     }
 

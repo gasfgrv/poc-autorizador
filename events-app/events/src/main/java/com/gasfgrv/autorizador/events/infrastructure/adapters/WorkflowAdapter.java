@@ -49,7 +49,6 @@ public class WorkflowAdapter implements WorkflowRepositoryPort {
                 .map(WorkflowContextEntity::getTaskId)
                 .orElse("");
 
-        System.out.println(taskId);
         return taskToken.equals(taskId);
     }
 

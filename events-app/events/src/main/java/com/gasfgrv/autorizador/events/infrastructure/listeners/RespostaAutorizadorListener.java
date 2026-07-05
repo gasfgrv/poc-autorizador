@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -25,15 +26,16 @@ public class RespostaAutorizadorListener {
     private final PedidoMapper mapper;
 
     @KafkaListener(topics = "${spring.kafka.topic.consumer.name}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listen(@Payload String data, @Headers Map<String, Object> headers, Acknowledgment ack) {
+    public void listen(@Payload String data, @Headers Map<String, byte[]> headers, Acknowledgment ack) {
         try {
             TopicoEventoPayload payload = objectMapper.readValue(data, TopicoEventoPayload.class);
 
             if (!headers.containsKey("taskToken")) {
                 log.warn("Mensagem recebida sem taskToken: {}", data);
+                return;
             }
 
-            String taskToken = headers.getOrDefault("taskToken", "").toString();
+            String taskToken = new String(headers.get("taskToken"), StandardCharsets.UTF_8);
             autorizador.enviarResposta(mapper.toDomain(payload), payload.approved(), taskToken);
         } catch (Exception e) {
             log.error("Erro ao processar mensagem do tópico: {}", data, e);
