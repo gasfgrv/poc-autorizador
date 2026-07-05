@@ -1,9 +1,9 @@
-package com.gasfgrv.autorizador.events.infrastructure.dtos;
+package com.gasfgrv.autorizador.events.infrastructure.dtos.sqs;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record OrderPayloadDto(
+public record EventDetailsDto(
         String orderId,
         String customerId,
         LocalDate orderDate,
