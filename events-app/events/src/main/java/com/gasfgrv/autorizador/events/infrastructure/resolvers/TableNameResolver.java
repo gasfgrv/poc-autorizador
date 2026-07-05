@@ -10,8 +10,11 @@ public class TableNameResolver implements DynamoDbTableNameResolver {
     @Override
     public <T> String resolve(Class<T> clazz) {
         TableName annotation = clazz.getAnnotation(TableName.class);
-        if (annotation == null)
+
+        if (annotation == null) {
             throw new IllegalArgumentException("Missing @TableName annotation on class: " + clazz.getName());
+        }
+
         return annotation.name();
     }
 

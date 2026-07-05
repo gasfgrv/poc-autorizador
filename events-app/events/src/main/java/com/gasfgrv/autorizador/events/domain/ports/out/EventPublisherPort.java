@@ -4,6 +4,6 @@ import com.gasfgrv.autorizador.events.domain.entities.Pedido;
 
 public interface EventPublisherPort {
 
-    void enviarEvento(Pedido pedido);
+    void enviarEvento(Pedido pedido, String taskToken);
 
 }

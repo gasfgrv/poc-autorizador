@@ -4,4 +4,5 @@ public interface WorkflowRepositoryPort {
 
     void salvarContextoWorkflow(String taskToken, String executionArn);
 
+    boolean buscarDadosDaExecucao(String taskToken);
 }

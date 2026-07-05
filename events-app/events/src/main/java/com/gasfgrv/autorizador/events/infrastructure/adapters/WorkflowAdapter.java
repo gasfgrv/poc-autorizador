@@ -26,4 +26,9 @@ public class WorkflowAdapter implements WorkflowRepositoryPort {
         db.save(entity);
     }
 
+    @Override
+    public boolean buscarDadosDaExecucao(String taskToken) {
+        return false;
+    }
+
 }

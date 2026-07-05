@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -23,11 +26,18 @@ public class EventPublisherAdapter implements EventPublisherPort {
     private final KafkaPublisherProperties publisherProperties;
 
     @Override
-    public void enviarEvento(Pedido pedido) {
+    public void enviarEvento(Pedido pedido, String taskToken) {
         try {
             TopicoComandoPayload payload = pedidoMapper.toCommandPayload(pedido);
             String kafkaMessage = objectMapper.writeValueAsString(payload);
-            kafkaTemplate.send(publisherProperties.name(), kafkaMessage);
+
+            Message<String> message = MessageBuilder
+                    .withPayload(kafkaMessage)
+                    .setHeader("taskToken", taskToken.getBytes())
+                    .setHeader(KafkaHeaders.TOPIC, publisherProperties.name())
+                    .build();
+
+            kafkaTemplate.send(message);
         } catch (Exception e) {
             log.error("Erro ao emitir pedido: {}", e.getMessage());
             throw new KafkaException(e);

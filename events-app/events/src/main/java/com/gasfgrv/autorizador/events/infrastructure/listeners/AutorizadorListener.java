@@ -35,7 +35,7 @@ public class AutorizadorListener {
             repository.salvarContextoWorkflow(workflowContext.taskToken(), workflowContext.executionArn());
 
             EventDetailsDto paymentDetails = payload.toPaymentDetails();
-            usecase.autorizarPedido(mapper.toDomain(paymentDetails));
+            usecase.autorizarPedido(mapper.toDomain(paymentDetails), payload.taskToken());
         } catch (Exception e) {
             log.error("Error listening for events in autorizador", e);
             throw new AutorizadorListenerException(e);
