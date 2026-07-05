@@ -6,14 +6,14 @@ import com.gasfgrv.autorizador.events.domain.ports.out.WorkflowResponsePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.services.sfn.SfnClient;
+import software.amazon.awssdk.services.sfn.SfnAsyncClient;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class WorkflowResponseAdapter implements WorkflowResponsePort {
 
-    private final SfnClient sfnClient;
+    private final SfnAsyncClient sfnClient;
     private final ObjectMapper objectMapper;
 
     @Override
