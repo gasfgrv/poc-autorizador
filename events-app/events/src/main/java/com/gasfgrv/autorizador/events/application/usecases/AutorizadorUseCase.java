@@ -27,20 +27,17 @@ public class AutorizadorUseCase implements AutorizadorInputPort {
     @Override
     public void enviarResposta(Pedido pedido, boolean approved, String taskToken) {
         if (taskToken.isBlank()) {
-            responsePort.responderComFalha();
+            log.error("Não foi possível enviar evento para autorizar pedido");
+            return;
         }
 
         boolean existeExecucao = repository.buscarDadosDaExecucao(taskToken);
 
-        if (!existeExecucao) {
-            responsePort.responderComFalha();
+        if (!existeExecucao || !approved) {
+            responsePort.responderComFalha(taskToken);
         }
 
-        if (!approved) {
-            responsePort.responderComFalha();
-        }
-
-        responsePort.responderComSucesso();
+        responsePort.responderComSucesso(taskToken, pedido);
     }
 
 }

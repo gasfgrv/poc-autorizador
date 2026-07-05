@@ -8,6 +8,11 @@ import io.awspring.cloud.dynamodb.DynamoDbTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+
+import java.util.Collections;
 
 @Slf4j
 @Component
@@ -28,7 +33,24 @@ public class WorkflowAdapter implements WorkflowRepositoryPort {
 
     @Override
     public boolean buscarDadosDaExecucao(String taskToken) {
-        return false;
+        Expression expression = Expression.builder()
+                .expression("id_task = :taskToken")
+                .expressionValues(Collections.singletonMap(":taskToken", AttributeValue.builder().s(taskToken).build()))
+                .build();
+
+        ScanEnhancedRequest request = ScanEnhancedRequest.builder()
+                .filterExpression(expression)
+                .build();
+
+        String taskId = db.scan(request, WorkflowContextEntity.class)
+                .items()
+                .stream()
+                .findFirst()
+                .map(WorkflowContextEntity::getTaskId)
+                .orElse("");
+
+        System.out.println(taskId);
+        return taskToken.equals(taskId);
     }
 
 }
