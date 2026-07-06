@@ -7,7 +7,7 @@
       "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
       "Arguments": {
         "QueueUrl": "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/sqs-autorizador-eventos",
-        "MessageBody": "{% $merge([$states.input, {'taskToken': $states.context.Task.Token, 'executionArn': $states.context.Execution.Id}]) %}"
+        "MessageBody": "{% $string($merge([$states.input, {'taskToken': $states.context.Task.Token, 'executionArn': $states.context.Execution.Id}])) %}"
       },
       "Catch": [
         {
