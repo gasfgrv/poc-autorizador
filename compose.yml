@@ -51,9 +51,9 @@ services:
     ports:
       - "127.0.0.1:4566:4566"
     environment:
-      - SERVICES=lambda,dynamodb,sqs,stepfunctions
-      - AWS_DEFAULT_REGION=us-east-1
-      - DEBUG=0
+      SERVICES: lambda,dynamodb,sqs,stepfunctions,iam
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: 0
     volumes:
       - "./localstack-init:/etc/localstack/init/ready.d"
       - "./lambda:/opt/code/lambda"
