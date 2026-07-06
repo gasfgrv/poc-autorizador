@@ -3,6 +3,7 @@ package com.gasfgrv.autorizador.events.infrastructure.listeners;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gasfgrv.autorizador.events.domain.ports.in.AutorizadorInputPort;
 import com.gasfgrv.autorizador.events.infrastructure.dtos.kafka.TopicoEventoPayload;
+import com.gasfgrv.autorizador.events.infrastructure.exceptions.AutorizadorListenerException;
 import com.gasfgrv.autorizador.events.infrastructure.mappers.PedidoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class RespostaAutorizadorListener {
     @KafkaListener(topics = "${spring.kafka.topic.consumer.name}", groupId = "${spring.kafka.consumer.group-id}")
     public void listen(@Payload String data, @Headers Map<String, byte[]> headers, Acknowledgment ack) {
         try {
+            log.info("Resposta recebida: {}", data);
             TopicoEventoPayload payload = objectMapper.readValue(data, TopicoEventoPayload.class);
 
             if (!headers.containsKey("taskToken")) {
@@ -39,7 +41,7 @@ public class RespostaAutorizadorListener {
             autorizador.enviarResposta(mapper.toDomain(payload), payload.approved(), taskToken);
         } catch (Exception e) {
             log.error("Erro ao processar mensagem do tópico: {}", data, e);
-            throw new KafkaException(e);
+            throw new AutorizadorListenerException(e);
         } finally {
             ack.acknowledge();
         }

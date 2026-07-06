@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gasfgrv.autorizador.events.domain.entities.Pedido;
 import com.gasfgrv.autorizador.events.domain.ports.out.EventPublisherPort;
 import com.gasfgrv.autorizador.events.infrastructure.dtos.kafka.TopicoComandoPayload;
+import com.gasfgrv.autorizador.events.infrastructure.exceptions.PublisherException;
 import com.gasfgrv.autorizador.events.infrastructure.mappers.PedidoMapper;
 import com.gasfgrv.autorizador.events.infrastructure.properties.KafkaPublisherProperties;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +38,11 @@ public class EventPublisherAdapter implements EventPublisherPort {
                     .setHeader(KafkaHeaders.TOPIC, publisherProperties.name())
                     .build();
 
+            log.info("Enviando evento para: {}", publisherProperties.name());
             kafkaTemplate.send(message);
         } catch (Exception e) {
             log.error("Erro ao emitir pedido: {}", e.getMessage());
-            throw new KafkaException(e);
+            throw new PublisherException(e);
         }
     }
 

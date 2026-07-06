@@ -3,6 +3,7 @@ package com.gasfgrv.autorizador.events.infrastructure.adapters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gasfgrv.autorizador.events.domain.entities.Pedido;
 import com.gasfgrv.autorizador.events.domain.ports.out.WorkflowResponsePort;
+import com.gasfgrv.autorizador.events.infrastructure.exceptions.WorkflowResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class WorkflowResponseAdapter implements WorkflowResponsePort {
                     .output(value));
         } catch (Exception e) {
             log.error("Erro ao processar os dados dos pedidos", e);
-            throw new RuntimeException(e);
+            throw new WorkflowResponseException(e);
         }
     }
 

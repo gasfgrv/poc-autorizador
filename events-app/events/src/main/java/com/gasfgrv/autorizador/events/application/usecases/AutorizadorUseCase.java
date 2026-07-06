@@ -1,5 +1,6 @@
 package com.gasfgrv.autorizador.events.application.usecases;
 
+import com.gasfgrv.autorizador.events.application.exceptions.SemTaskTokenException;
 import com.gasfgrv.autorizador.events.domain.entities.Pedido;
 import com.gasfgrv.autorizador.events.domain.ports.in.AutorizadorInputPort;
 import com.gasfgrv.autorizador.events.domain.ports.out.EventPublisherPort;
@@ -26,9 +27,11 @@ public class AutorizadorUseCase implements AutorizadorInputPort {
 
     @Override
     public void enviarResposta(Pedido pedido, boolean approved, String taskToken) {
+        log.info("Enviando resposta para autorizar pedido");
+
         if (taskToken.isBlank()) {
             log.error("Não foi possível enviar evento para autorizar pedido");
-            return;
+            throw new SemTaskTokenException();
         }
 
         boolean existeExecucao = repository.buscarDadosDaExecucao(taskToken);

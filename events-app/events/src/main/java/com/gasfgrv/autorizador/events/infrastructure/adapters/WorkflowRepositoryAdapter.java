@@ -17,7 +17,7 @@ import java.util.Collections;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WorkflowAdapter implements WorkflowRepositoryPort {
+public class WorkflowRepositoryAdapter implements WorkflowRepositoryPort {
 
     private final DynamoDbTemplate db;
     private final WorkflowContextMapper mapper;
@@ -33,6 +33,7 @@ public class WorkflowAdapter implements WorkflowRepositoryPort {
 
     @Override
     public boolean buscarDadosDaExecucao(String taskToken) {
+        log.info("Buscando workflow context");
         Expression expression = Expression.builder()
                 .expression("id_task = :taskToken")
                 .expressionValues(Collections.singletonMap(":taskToken", AttributeValue.builder().s(taskToken).build()))
@@ -49,6 +50,7 @@ public class WorkflowAdapter implements WorkflowRepositoryPort {
                 .map(WorkflowContextEntity::getTaskId)
                 .orElse("");
 
+        log.info("busca por task id conclída: {}", taskId);
         return taskToken.equals(taskId);
     }
 

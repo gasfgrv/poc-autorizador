@@ -28,7 +28,7 @@ public class AutorizadorListener {
     @SqsListener(value = "${spring.cloud.aws.sqs.queue}", acknowledgementMode = SqsListenerAcknowledgementMode.MANUAL)
     public void listen(String message, Acknowledgement acknowledgement) {
         try {
-            log.info("Received message from SQS: {}", message);
+            log.info("Evento recebido: {}", message);
             SqsEventPayloadDto payload = objectMapper.readValue(message, SqsEventPayloadDto.class);
 
             WorkflowContextDto workflowContext = payload.toWorkflowContext();
@@ -37,7 +37,7 @@ public class AutorizadorListener {
             EventDetailsDto paymentDetails = payload.toPaymentDetails();
             usecase.autorizarPedido(mapper.toDomain(paymentDetails), payload.taskToken());
         } catch (Exception e) {
-            log.error("Error listening for events in autorizador", e);
+            log.error("Erro ao autorizar pedido", e);
             throw new AutorizadorListenerException(e);
         } finally {
             acknowledgement.acknowledge();
