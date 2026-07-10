@@ -16,6 +16,7 @@ public class RespostaExecucaoService {
 
         if (!existeExecucao || !approved) {
             responsePort.responderComFalha(taskToken);
+            return;
         }
 
         responsePort.responderComSucesso(taskToken, pedido);
