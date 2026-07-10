@@ -1,4 +1,4 @@
-package com.gasfgrv.autorizador.events.application.exceptions;
+package com.gasfgrv.autorizador.events.domain.exceptions;
 
 public class SemTaskTokenException extends RuntimeException {
 
